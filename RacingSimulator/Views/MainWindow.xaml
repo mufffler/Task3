@@ -1,0 +1,151 @@
+<Window x:Class="RacingSimulator.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:RacingSimulator.ViewModels"
+        xmlns:models="clr-namespace:RacingSimulator.Models.Enums"
+        mc:Ignorable="d"
+        Title="Симулятор гонок" Height="700" Width="1000">
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+    
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="350"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="🏁 СИМУЛЯТОР ГОНОК 🏁" 
+                   FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="5"/>
+        
+        <!-- Кнопки управления -->
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" Margin="5">
+            <Button Width="120" Margin="5" Content="▶ Старт" Background="LightGreen"
+                    Command="{Binding StartRaceCommand}"/>
+            <Button Width="120" Margin="5" Content="⏸ Стоп" Background="LightCoral"
+                    Command="{Binding StopRaceCommand}"/>
+            <Button Width="120" Margin="5" Content="➕ Добавить болид" 
+                    Command="{Binding AddCarCommand}"/>
+            <Button Width="120" Margin="5" Content="➖ Удалить болид" 
+                    Command="{Binding RemoveCarCommand}"/>
+            <Button Width="120" Margin="5" Content="🗑 Очистить лог" 
+                    Command="{Binding ClearLogCommand}"/>
+        </StackPanel>
+        
+        <!-- Список болидов -->
+        <GroupBox Grid.Row="2" Grid.Column="0" Header="Болиды" Margin="5">
+            <ListBox ItemsSource="{Binding Cars}" SelectedItem="{Binding SelectedCarName}"
+                     DisplayMemberPath="Name">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="Gray" BorderThickness="1" Margin="3" Padding="5" CornerRadius="5">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Width="80"/>
+                                    <TextBlock Text="🏎" FontSize="14"/>
+                                    <TextBlock Text="{Binding State}" FontSize="12" Margin="10,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding State}" Value="Racing">
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                        <Setter Property="Text" Value="🏁 В гонке"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Pitting">
+                                                        <Setter Property="Foreground" Value="Orange"/>
+                                                        <Setter Property="Text" Value="🔧 В боксах"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Crashed">
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                        <Setter Property="Text" Value="💥 Авария"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Finished">
+                                                        <Setter Property="Foreground" Value="Blue"/>
+                                                        <Setter Property="Text" Value="🏆 Финиш"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <!-- Прогресс-бар дистанции -->
+                                <TextBlock Text="Дистанция:" FontSize="10" Margin="0,5,0,0"/>
+                                <ProgressBar Height="15" Value="{Binding Distance}" 
+                                           Maximum="{Binding TotalDistance}" 
+                                           Foreground="Blue" Background="LightGray"/>
+                                <TextBlock Text="{Binding Distance, StringFormat='{0:F0} м / {1:F0} м'}" 
+                                           FontSize="10" HorizontalAlignment="Right"/>
+                                
+                                <!-- Износ шин -->
+                                <TextBlock Text="Износ шин:" FontSize="10" Margin="0,5,0,0"/>
+                                <ProgressBar Height="15" Value="{Binding TireWear}" 
+                                           Maximum="100" Foreground="Orange" Background="LightGray"/>
+                                
+                                <!-- Скорость -->
+                                <TextBlock Text="{Binding Speed, StringFormat='Скорость: {0:F1} м/с'}" 
+                                           FontSize="10" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </GroupBox>
+        
+        <!-- Лог событий -->
+        <GroupBox Grid.Row="2" Grid.Column="1" Header="📋 Лог событий" Margin="5">
+            <ListBox ItemsSource="{Binding RaceLog}" Height="Auto">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#DDD" BorderThickness="0,0,0,1" Padding="3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding EventTime, StringFormat='HH:mm:ss'}" 
+                                           FontSize="10" Foreground="Gray"/>
+                                <TextBlock Text="{Binding CarName}" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Text="{Binding Message}" FontSize="11" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Distance, StringFormat='Дистанция: {0:F0} м'}" 
+                                           FontSize="9" Foreground="Blue"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </GroupBox>
+        
+        <!-- Статусная строка -->
+        <Border Grid.Row="3" Grid.ColumnSpan="2" Background="LightYellow" 
+                BorderBrush="Gray" BorderThickness="1" Margin="5" Padding="5">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="🏎 Активных болидов: "/>
+                <TextBlock Text="{Binding Cars.Count, StringFormat='{0}'}" FontWeight="Bold"/>
+                <TextBlock Text=" | 🏁 В гонке: " Margin="15,0,0,0"/>
+                <TextBlock Text="{Binding Cars.Count, FallbackValue='0'}" FontWeight="Bold">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text">
+                                <Setter.Value>
+                                    <MultiBinding StringFormat="{}{0}">
+                                        <Binding Path="Cars" 
+                                                 Converter="{StaticResource RacingCountConverter}"/>
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
